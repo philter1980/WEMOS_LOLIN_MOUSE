@@ -1,0 +1,32 @@
+void setup() {
+  // ...
+  mpu.setAccelerometerRange(MPU6050_RANGE_4_G); // Maggiore sensibilità
+  mpu.setGyroRange(MPU6050_RANGE_250_DEG);      // Maggiore precisione nel rilevamento dei movimenti
+
+  mpu.setFilterBandwidth(MPU6050_BAND_44_HZ);   // Filtro più ampio per reattività, ma più rumore
+  // ...
+}
+
+void loop() {
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
+
+  if (bleMouse.isConnected()) {
+    // Aumenta la sensibilità applicando un fattore di moltiplicazione ai valori x e y
+    int sensitivityFactor = 5; // Prova valori tra 2 e 10 per calibrare
+    int deltaX = a.acceleration.x * sensitivityFactor;
+    int deltaY = a.acceleration.y * sensitivityFactor;
+
+    // Movimento del mouse
+    bleMouse.move(deltaX, deltaY);
+
+    // Click del mouse
+    if (analogRead(sensorPin) > 10) {
+      delay(100); // Riduci il delay per una reazione più rapida
+      if (analogRead(sensorPin) > 10) {
+        bleMouse.click(MOUSE_LEFT);
+      }
+    }
+  }
+  delay(10); // Ridotto per migliorare la reattività
+}
